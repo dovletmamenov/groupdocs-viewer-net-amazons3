@@ -37,25 +37,57 @@ namespace GroupDocs.Viewer.AWS.S3
         {
             FileDescription fileDescription = new FileDescription(guid);
 
-            if (Exists(guid))
+            try
             {
-                string objectKey = GetObjectKey(guid);
+                string key = GetObjectKey(guid);
 
-                GetObjectMetadataResponse response =
-                    _client.GetObjectMetadata(_bucketName, objectKey);
+                GetObjectMetadataRequest request = new GetObjectMetadataRequest
+                {
+                    BucketName = _bucketName,
+                    Key = key
+                };
+
+                GetObjectMetadataResponse response = _client.GetObjectMetadata(request);
 
                 fileDescription.LastModificationDate = response.LastModified;
                 fileDescription.Size = response.ContentLength;
-            }
 
-            return fileDescription;
+                return fileDescription;
+            }
+            catch (AmazonS3Exception amazonS3Exception)
+            {
+                if (amazonS3Exception.ErrorCode != null && amazonS3Exception.ErrorCode.Equals("NotFound"))
+                    return fileDescription;
+
+                if (amazonS3Exception.ErrorCode != null 
+                    && (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") || amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
+                {
+                    throw new System.Exception("Please check the provided AWS Credentials. " +
+                                               "If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
+                }
+
+                throw new System.Exception(string.Format("An error occurred with the message '{0}' when getting object metadata.", amazonS3Exception.Message));
+            }
         }
 
         public Stream GetFile(string guid)
         {
             string objectKey = GetObjectKey(guid);
 
-            return _client.GetObjectStream(_bucketName, objectKey, new Dictionary<string, object>());
+            GetObjectRequest request = new GetObjectRequest
+            {
+                Key = objectKey,
+                BucketName = _bucketName,
+            };
+
+            using (GetObjectResponse response = _client.GetObject(request))
+            {
+                MemoryStream stream = new MemoryStream();
+                response.ResponseStream.CopyTo(stream);
+                stream.Position = 0;
+
+                return stream;
+            }
         }
 
         public DateTime GetLastModificationDate(string guid)
@@ -71,18 +103,31 @@ namespace GroupDocs.Viewer.AWS.S3
             ListObjectsRequest request = new ListObjectsRequest
             {
                 BucketName = _bucketName,
-                Prefix = prefix
+                Prefix = prefix,
+                Delimiter = Constants.Delimiter
             };
 
             ListObjectsResponse response = _client.ListObjects(request);
 
             List<FileDescription> result = new List<FileDescription>();
+
+            // add directory objects
+            foreach (string directory in response.CommonPrefixes)
+            {
+                FileDescription fileDescription = new FileDescription(directory, true);
+
+                result.Add(fileDescription);
+            }
+
+            // add file objects
             foreach (S3Object entry in response.S3Objects)
             {
-                FileDescription fileDescription = new FileDescription(entry.Key);
-
-                //TODO: remove storage path from begining 
-                //TODO: check if is directory
+                FileDescription fileDescription = new FileDescription(entry.Key)
+                {
+                    IsDirectory = false,
+                    LastModificationDate = entry.LastModified,
+                    Size = entry.Size
+                };
 
                 result.Add(fileDescription);
             }
@@ -105,55 +150,17 @@ namespace GroupDocs.Viewer.AWS.S3
             _client.PutObject(request);
         }
 
-        public bool Exists(string guid)
-        {
-            try
-            {
-                string key = GetObjectKey(guid);
-
-                GetObjectMetadataRequest request = new GetObjectMetadataRequest
-                {
-                    BucketName = _bucketName,
-                    Key = key
-                };
-
-                _client.GetObjectMetadata(request);
-
-                return true;
-            }
-            catch (AmazonS3Exception amazonS3Exception)
-            {
-                if (amazonS3Exception.ErrorCode != null &&
-                    amazonS3Exception.ErrorCode.Equals("NotFound"))
-                {
-                    return false;
-                }
-
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new System.Exception("Please check the provided AWS Credentials. " +
-                                               "If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                else
-                {
-                    throw new System.Exception(string.Format("An error occurred with the message '{0}' when getting object metadata.", amazonS3Exception.Message));
-                }
-            }
-        }
-
         private string GetObjectKey(string guid)
         {
             if (Path.IsPathRooted(guid))
                 return guid;
 
             string withStorage = Path.Combine(_config.StoragePath, guid);
-            string path = Path.GetFullPath(withStorage);
 
-            return PathHelper.NormalizePath(path);
+            return PathHelper.NormalizePath(withStorage);
         }
 
+        #region IDisposable
         /// <summary>
         /// Indicates whether Dispose was called
         /// </summary>
@@ -185,6 +192,6 @@ namespace GroupDocs.Viewer.AWS.S3
             Dispose(true);
             GC.SuppressFinalize(this);
         }
-
+        #endregion
     }
 }

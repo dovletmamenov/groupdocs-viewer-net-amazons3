@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace GroupDocs.Viewer.AWS.S3.Helpers
+namespace GroupDocs.Viewer.AWS.S3
 {
     public class OutputSaveStream : MemoryStream
     {
@@ -19,15 +19,14 @@ namespace GroupDocs.Viewer.AWS.S3.Helpers
             if (!_isExecuted)
             {
                 _isExecuted = true;
-                MemoryStream ms = new MemoryStream();
+                MemoryStream stream = new MemoryStream();
                 this.Position = 0;
-                this.CopyTo(ms);
-                ms.Position = 0;
-                _executeWhenClosing(ms);
+                this.CopyTo(stream);
+                stream.Position = 0;
+                _executeWhenClosing(stream);
             }
 
             base.Close();
         }
     }
-
 }

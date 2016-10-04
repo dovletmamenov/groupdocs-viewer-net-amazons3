@@ -3,10 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace GroupDocs.Viewer.AWS.S3.Helpers
 {
-    public static class PathHelper
+    internal static class PathHelper
     {
-        private const char PathDelimeter = '/';
-
         /// <summary>
         /// Converts guid to relative directory name.
         /// </summary>
@@ -31,10 +29,6 @@ namespace GroupDocs.Viewer.AWS.S3.Helpers
                     result = result.Replace(':', replacementCharacter).Replace('\\', replacementCharacter).Replace('/', replacementCharacter);
             }
 
-            if (result.StartsWith("http") || result.StartsWith("ftp"))
-                result = result.Replace(':', replacementCharacter).Replace('\\', replacementCharacter).Replace('/', replacementCharacter);
-
-
             result = Regex.Replace(result, "[_]{2,}", new string(replacementCharacter, 1));
             result = result.TrimStart(replacementCharacter);
 
@@ -48,7 +42,8 @@ namespace GroupDocs.Viewer.AWS.S3.Helpers
         /// <returns>Normalized path.</returns>
         public static string NormalizePath(string path)
         {
-            return Regex.Replace(path, @"\\+", PathDelimeter.ToString()).Trim(PathDelimeter);
+            return Regex.Replace(path, @"\\+", Constants.Delimiter)
+                .Trim(Constants.Delimiter.ToCharArray());
         }
     }
 }

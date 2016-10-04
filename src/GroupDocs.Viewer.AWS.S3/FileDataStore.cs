@@ -1,129 +1,73 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using Amazon.S3;
 using Amazon.S3.Model;
 using GroupDocs.Viewer.AWS.S3.Helpers;
+using GroupDocs.Viewer.Config;
 using GroupDocs.Viewer.Domain;
 using GroupDocs.Viewer.Helper;
 
 namespace GroupDocs.Viewer.AWS.S3
 {
-    /// <summary>
-    /// The Amazon S3 file data store for GroupDocs.Viewer
-    /// </summary>
     public class FileDataStore : IFileDataStore, IDisposable
     {
-        /// <summary>
-        /// The Amazon S3 client
-        /// </summary>
+        private readonly ViewerConfig _config;
+
         private IAmazonS3 _client;
 
-        /// <summary>
-        /// The Amazon S3 bucket name
-        /// </summary>
         private readonly string _bucketName;
 
-        /// <summary>
-        /// The cache directory name, default is "cache"
-        /// </summary>
-        private const string CacheDirectoryName = "cache";
-
-        /// <summary>
-        /// Initializaes new instance of <see cref="FileDataStore"/> class.
-        /// </summary>
-        /// <param name="client">The client.</param>
-        /// <param name="bucketName">The bucket name.</param>
-        public FileDataStore(IAmazonS3 client, string bucketName)
+        public FileDataStore(ViewerConfig config, IAmazonS3 client, string bucketName)
         {
+            if (config == null)
+                throw new ArgumentNullException("config");
             if (client == null)
                 throw new ArgumentNullException("client");
             if (string.IsNullOrEmpty(bucketName))
                 throw new ArgumentNullException("bucketName");
 
+            _config = config;
             _client = client;
             _bucketName = bucketName;
         }
 
-        /// <summary>
-        /// Retrives file data, returns null if file data does not exist
-        /// </summary>
-        /// <param name="fileDescription">The file description.</param>
-        /// <returns>The file data or null.</returns>
         public FileData GetFileData(FileDescription fileDescription)
         {
+            string objectKey = GetObjectKey(fileDescription);
+
+            GetObjectRequest request = new GetObjectRequest
+            {
+                Key = objectKey,
+                BucketName = _bucketName,
+            };
+
             try
             {
-                string key = GetObjectKey(fileDescription);
-
-                using (Stream stream = _client.GetObjectStream(_bucketName, key, new Dictionary<string, object>()))
-                    return Deserialize(stream);
+                using (GetObjectResponse response = _client.GetObject(request))
+                    return Deserialize(response.ResponseStream);
             }
-            catch (AmazonS3Exception amazonS3Exception)
+            catch (AmazonS3Exception)
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    amazonS3Exception.ErrorCode.Equals("NoSuchKey"))
-                {
-                    return null;
-                }
-
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new System.Exception("Please check the provided AWS Credentials. " +
-                                               "If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                else
-                {
-                    throw new System.Exception(string.Format("An error occurred with the message '{0}' when getting object stream.", amazonS3Exception.Message));
-                }
+                return null;
             }
         }
 
-        /// <summary>
-        /// Saves file data for file description.
-        /// </summary>
-        /// <param name="fileDescription">The file description.</param>
-        /// <param name="fileData">The file data.</param>
         public void SaveFileData(FileDescription fileDescription, FileData fileData)
         {
-            try
-            {
-                string key = GetObjectKey(fileDescription);
+            string objectKey = GetObjectKey(fileDescription);
 
-                PutObjectRequest request = new PutObjectRequest()
-                {
-                    BucketName = _bucketName,
-                    Key = key,
-                    InputStream = Serialize(fileData)
-                };
-
-                _client.PutObject(request);
-            }
-            catch (AmazonS3Exception amazonS3Exception)
+            PutObjectRequest request = new PutObjectRequest
             {
-                if (amazonS3Exception.ErrorCode != null &&
-                    (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") ||
-                    amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
-                {
-                    throw new System.Exception("Please check the provided AWS Credentials. " +
-                                               "If you haven't signed up for Amazon S3, please visit http://aws.amazon.com/s3");
-                }
-                else
-                {
-                    throw new System.Exception(string.Format("An error occurred with the message '{0}' when putting object.", amazonS3Exception.Message));
-                }
-            }
+                BucketName = _bucketName,
+                Key = objectKey,
+                InputStream = Serialize(fileData)
+            };
+
+            _client.PutObject(request);
         }
 
-        /// <summary>
-        /// Deserialize stream into FileData object.
-        /// </summary>
-        /// <param name="stream">The stream.</param>
-        /// <returns>The file data object.</returns>
         private FileData Deserialize(Stream stream)
         {
             using (XmlTextReader xmlTextReader = new XmlTextReader(stream))
@@ -144,11 +88,6 @@ namespace GroupDocs.Viewer.AWS.S3
             return null;
         }
 
-        /// <summary>
-        /// Serialize file data objec into stream.
-        /// </summary>
-        /// <param name="fileData">The file data.</param>
-        /// <returns>The stream.</returns>
         private Stream Serialize(FileData fileData)
         {
             MemoryStream stream = new MemoryStream();
@@ -172,22 +111,18 @@ namespace GroupDocs.Viewer.AWS.S3
             return stream;
         }
 
-        /// <summary>
-        /// Gets the object key by file description.
-        /// </summary>
-        /// <param name="fileDescription">The file description.</param>
-        /// <returns>The object key.</returns>
         private string GetObjectKey(FileDescription fileDescription)
         {
             string fileName = Path.ChangeExtension(fileDescription.Name, "xml");
             string directoryPath =
                 PathHelper.ToRelativeDirectoryName(fileDescription.Guid);
-            string path = 
-                Path.Combine(CacheDirectoryName, directoryPath, fileName);
+            string path =
+                Path.Combine(_config.CachePath, directoryPath, fileName);
 
             return PathHelper.NormalizePath(path);
         }
 
+        #region IDisposable
         /// <summary>
         /// Indicates whether Dispose was called
         /// </summary>
@@ -219,5 +154,6 @@ namespace GroupDocs.Viewer.AWS.S3
             Dispose(true);
             GC.SuppressFinalize(this);
         }
+        #endregion
     }
 }
