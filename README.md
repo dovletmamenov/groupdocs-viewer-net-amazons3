@@ -1,11 +1,11 @@
 # GroupDocs.Viewer .NET AmazonS3
 
-[Amazon S3](https://aws.amazon.com/ru/s3/) IInputDataHandler, ICacheDataHandler, IFileDataStore provider for [GroupDocs.Viewer for .NET](https://www.nuget.org/packages/groupdocs-viewer-dotnet/)
+[Amazon S3](https://aws.amazon.com/s3/) IInputDataHandler, ICacheDataHandler, IFileDataStore provider for [GroupDocs.Viewer for .NET](https://www.nuget.org/packages/groupdocs-viewer-dotnet/)
  which allows you to keep files and cache in the cloud. 
 
 ## Installation & Configuration
 
-Install via [nuget.org](nuget.org)
+Install via [nuget.org](http://nuget.org)
 
 ```powershell
 Install-Package groupdocs-viewer-dotnet-amazons3
@@ -54,4 +54,4 @@ var pages = viewerHtmlHandler.GetPages("your-document.docx");
 
 ## License
 
-GroupDocs.Viewer .NET AmazonS3 is Open Source software released under the [MIT license](http://www.nunit.org/nuget/nunit3-license.txt).
+GroupDocs.Viewer .NET AmazonS3 is Open Source software released under the [MIT license](https://github.com/harumburum/groupdocs-viewer-net-amazons3/blob/master/LICENSE.md).
