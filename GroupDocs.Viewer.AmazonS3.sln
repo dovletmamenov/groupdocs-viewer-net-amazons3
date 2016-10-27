@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Viewer.AWS.S3", "src\GroupDocs.Viewer.AWS.S3.csproj", "{A4130B11-BD3D-467C-8375-D551B07DCE9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Viewer.AmazonS3", "src\GroupDocs.Viewer.AmazonS3.csproj", "{A4130B11-BD3D-467C-8375-D551B07DCE9F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Viewer.AWS.S3.Tests", "test\GroupDocs.Viewer.AWS.S3.Tests.csproj", "{54B809CC-0921-4DC7-A212-907FE24CF7CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GroupDocs.Viewer.AmazonS3.Tests", "test\GroupDocs.Viewer.AmazonS3.Tests.csproj", "{54B809CC-0921-4DC7-A212-907FE24CF7CA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

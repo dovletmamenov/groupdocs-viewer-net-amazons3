@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using NUnit.Framework;
 
-namespace GroupDocs.Viewer.AWS.S3.Tests
+namespace GroupDocs.Viewer.AmazonS3.Tests
 {
     [TestFixture]
     public class OutputSaveStreamTests

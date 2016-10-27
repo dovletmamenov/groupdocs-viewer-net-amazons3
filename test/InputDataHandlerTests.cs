@@ -9,13 +9,12 @@ using GroupDocs.Viewer.Domain.Options;
 using Moq;
 using NUnit.Framework;
 
-namespace GroupDocs.Viewer.AWS.S3.Tests
+namespace GroupDocs.Viewer.AmazonS3.Tests
 {
     [TestFixture]
     public class InputDataHandlerTests
     {
         private readonly ViewerConfig _viewerConfig;
-        private readonly string _bucketName;
 
         public InputDataHandlerTests()
         {
@@ -24,8 +23,6 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                 StoragePath = Constants.Delimiter,
                 CacheFolderName = "cache"
             };
-
-            _bucketName = "bucket";
         }
 
         [Test]
@@ -48,7 +45,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                 });
 
             InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new InputDataHandler(_viewerConfig, clientMock.Object);
 
             FileDescription fileDescription = handler.GetFileDescription("document.doc");
 
@@ -64,8 +61,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Throws(new AmazonS3Exception("") {ErrorCode = "NotFound"});
 
-            InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
             FileDescription fileDescription = handler.GetFileDescription("document.doc");
 
@@ -90,8 +86,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                     return new GetObjectResponse { ResponseStream = ms };
                 });
 
-            InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
             Stream stream = handler.GetFile("document.doc");
             
@@ -115,8 +110,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                     };
                 });
 
-            InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
             DateTime lastModificationDate = handler.GetLastModificationDate("document.doc");
 
@@ -130,7 +124,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.ListObjects(It.IsAny<ListObjectsRequest>()))
                 .Returns((ListObjectsRequest request) =>
                 {
-                    Assert.AreEqual("/storage", request.Prefix);
+                    Assert.AreEqual("storage/", request.Prefix);
                     Assert.AreEqual("/", request.Delimiter);
 
                     ListObjectsResponse response = new ListObjectsResponse();
@@ -140,8 +134,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                     return response;
                 });
 
-            InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
             FileTreeOptions fileTreeOptions = new FileTreeOptions("/storage");
 
@@ -169,8 +162,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                    return new PutObjectResponse();
                });
 
-            InputDataHandler handler =
-                new InputDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
             MemoryStream documentStream = new MemoryStream();
             documentStream.WriteByte(101);

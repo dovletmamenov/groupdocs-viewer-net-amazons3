@@ -8,13 +8,12 @@ using GroupDocs.Viewer.Domain;
 using Moq;
 using NUnit.Framework;
 
-namespace GroupDocs.Viewer.AWS.S3.Tests
+namespace GroupDocs.Viewer.AmazonS3.Tests
 {
     [TestFixture]
     public class CacheDataHandlerTests
     {
         private readonly ViewerConfig _viewerConfig;
-        private readonly string _bucketName;
 
         public CacheDataHandlerTests()
         {
@@ -23,8 +22,6 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                 StoragePath = Constants.Delimiter,
                 CacheFolderName = "cache"
             };
-
-            _bucketName = "bucket";
         }
 
         [Test]
@@ -33,7 +30,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             string guid = "path\\document.doc";
             CachedDocumentDescription cachedDocumentDescription =
@@ -44,7 +41,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             string filePath = handler.GetFilePath(cachedDocumentDescription);
 
-            Assert.AreEqual("cache/path/document_doc/document.jpg", filePath);
+            Assert.AreEqual("cache/path/document.doc/document.jpg", filePath);
         }
 
         [Test]
@@ -52,8 +49,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
         {
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             string sourceDocumentGuid = "path\\document.doc";
             string attachementName = "attachement.zip";
@@ -63,7 +59,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             string filePath = handler.GetFilePath(cachedDocumentDescription);
 
-            Assert.AreEqual("cache/path/document_doc/attachements/attachement.zip", filePath);
+            Assert.AreEqual("cache/path/document.doc/attachements/attachement.zip", filePath);
         }
 
         [Test]
@@ -71,8 +67,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
         {
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             string sourceDocumentGuid = "path\\document.doc";
 
@@ -85,7 +80,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             string filePath = handler.GetFilePath(cachedPageDescription);
 
-            Assert.AreEqual("cache/path/document_doc/page-1.png", filePath);
+            Assert.AreEqual("cache/path/document.doc/page-1.png", filePath);
         }
 
         [Test]
@@ -93,8 +88,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
         {
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             string sourceDocumentGuid = "path\\document.doc";
 
@@ -110,7 +104,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             string filePath = handler.GetFilePath(cachedPageResourceDescription);
 
-            Assert.AreEqual("cache/path/document_doc/resources/page-1/styles.css", filePath);
+            Assert.AreEqual("cache/path/document.doc/resources/page-1/styles.css", filePath);
         }
 
         [Test]
@@ -120,13 +114,12 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Returns((GetObjectMetadataRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/document.jpg", request.Key);
+                    Assert.AreEqual("cache/document.doc/document.jpg", request.Key);
                     
                     return new GetObjectMetadataResponse();
                 });
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedDocumentDescription cachedDocumentDescription =
                   new CachedDocumentDescription("document.doc")
@@ -144,13 +137,12 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Returns((GetObjectMetadataRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/attachements/attachement.zip", request.Key);
+                    Assert.AreEqual("cache/document.doc/attachements/attachement.zip", request.Key);
 
                     return new GetObjectMetadataResponse();
                 });
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedAttachmentDescription cachedDocumentDescription =
                 new CachedAttachmentDescription("document.doc", "attachement.zip");
@@ -165,13 +157,12 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                  .Returns((GetObjectMetadataRequest request) =>
                  {
-                     Assert.AreEqual("cache/document_doc/page-1.jpg", request.Key);
+                     Assert.AreEqual("cache/document.doc/page-1.jpg", request.Key);
 
                      return new GetObjectMetadataResponse();
                  });
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedPageDescription cachedPageDescription =
                new CachedPageDescription("document.doc")
@@ -190,13 +181,12 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Returns((GetObjectMetadataRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/resources/page-1/style.css", request.Key);
+                    Assert.AreEqual("cache/document.doc/resources/page-1/style.css", request.Key);
 
                     return new GetObjectMetadataResponse();
                 });
 
-            CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+            CacheDataHandler handler = new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedPageDescription cachedPageDescription =
                  new CachedPageDescription("document.doc")
@@ -217,7 +207,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObject(It.IsAny<GetObjectRequest>()))
                 .Returns((GetObjectRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/document.css", request.Key);
+                    Assert.AreEqual("cache/document.doc/document.css", request.Key);
 
                     MemoryStream ms = new MemoryStream();
                     ms.WriteByte(101);
@@ -227,7 +217,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                 });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedDocumentDescription cachedDocumentDescription =
                   new CachedDocumentDescription("document.doc")
@@ -250,14 +240,14 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObject(It.IsAny<GetObjectRequest>()))
                 .Returns((GetObjectRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/document.css", request.Key);
+                    Assert.AreEqual("cache/document.doc/document.css", request.Key);
 
                     return new GetObjectResponse { ResponseStream = tempStream };
                 });
             clientMock.Setup(client => client.PutObject(It.IsAny<PutObjectRequest>()))
                .Returns((PutObjectRequest request) =>
                {
-                   Assert.AreEqual("cache/document_doc/document.css", request.Key);
+                   Assert.AreEqual("cache/document.doc/document.css", request.Key);
                    Assert.AreEqual((byte)101, request.InputStream.ReadByte());
                    request.InputStream.Position = 0;
 
@@ -268,7 +258,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
                });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedDocumentDescription cachedDocumentDescription =
                   new CachedDocumentDescription("document.doc")
@@ -295,13 +285,13 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Returns((GetObjectMetadataRequest request) =>
                 {
-                    Assert.AreEqual("cache/document_doc/document.css", request.Key);
+                    Assert.AreEqual("cache/document.doc/document.css", request.Key);
 
                     return new GetObjectMetadataResponse() { LastModified = DateTime.Now };
                 });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedDocumentDescription cachedDocumentDescription =
                   new CachedDocumentDescription("document.doc")
@@ -318,7 +308,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedPageDescription cachedPageDescription =
                 new CachedPageDescription("document.doc")
@@ -329,7 +319,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             string htmlPageResourceFolder = handler.GetHtmlPageResourcesFolder(cachedPageDescription);
 
-            Assert.AreEqual("cache/document_doc/resources/page-1", htmlPageResourceFolder);
+            Assert.AreEqual("cache/document.doc/resources/page-1/", htmlPageResourceFolder);
         }
 
         [Test]
@@ -339,17 +329,17 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.ListObjects(It.IsAny<ListObjectsRequest>()))
               .Returns((ListObjectsRequest request) =>
               {
-                  Assert.AreEqual("cache/document_doc/resources/page-1", request.Prefix);
+                  Assert.AreEqual("cache/document.doc/resources/page-1/", request.Prefix);
 
                   var s3Objects = new List<S3Object>
                   {
-                      new S3Object { Key = "cache/document_doc/resources/page-1/document.css" }
+                      new S3Object { Key = "cache/document.doc/resources/page-1/document.css" }
                   };
                   return new ListObjectsResponse() { S3Objects = s3Objects };
               });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             CachedPageDescription cachedPageDescription =
                  new CachedPageDescription("document.doc")
@@ -385,7 +375,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
              });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             handler.ClearCache(TimeSpan.Zero);
         }
@@ -412,7 +402,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
              });
 
             CacheDataHandler handler =
-                new CacheDataHandler(_viewerConfig, clientMock.Object, _bucketName);
+                new CacheDataHandler(_viewerConfig, clientMock.Object);
 
             handler.ClearCache(TimeSpan.FromHours(0.5));
         }

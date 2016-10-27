@@ -1,11 +1,14 @@
 ﻿using System;
 using System.IO;
 
-namespace GroupDocs.Viewer.AWS.S3
+namespace GroupDocs.Viewer.AmazonS3
 {
+    /// <summary>
+    /// The output save stream 
+    /// </summary>
     public class OutputSaveStream : MemoryStream
     {
-        private bool _isExecuted;
+        private bool _executed;
 
         private readonly Func<Stream, bool> _executeWhenClosing;
 
@@ -16,9 +19,9 @@ namespace GroupDocs.Viewer.AWS.S3
 
         public override void Close()
         {
-            if (!_isExecuted)
+            if (!_executed)
             {
-                _isExecuted = true;
+                _executed = true;
                 MemoryStream stream = new MemoryStream();
                 this.Position = 0;
                 this.CopyTo(stream);

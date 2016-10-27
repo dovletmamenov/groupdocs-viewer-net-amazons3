@@ -8,13 +8,12 @@ using GroupDocs.Viewer.Domain;
 using Moq;
 using NUnit.Framework;
 
-namespace GroupDocs.Viewer.AWS.S3.Tests
+namespace GroupDocs.Viewer.AmazonS3.Tests
 {
     [TestFixture]
     public class FileDataStoreTests
     {
         private readonly ViewerConfig _viewerConfig;
-        private readonly string _bucketName;
 
         public FileDataStoreTests()
         {
@@ -22,8 +21,6 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             {
                 StoragePath = Constants.Delimiter
             };
-
-            _bucketName = "bucket";
         }
 
         [Test]
@@ -37,11 +34,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
             clientMock.Setup(client => client.GetObject(It.IsAny<GetObjectRequest>()))
                 .Throws(new AmazonS3Exception("Error"));
 
-            FileDataStore fileDataStore = new FileDataStore(
-                _viewerConfig,
-                clientMock.Object,
-                _bucketName
-            );
+            FileDataStore fileDataStore = new FileDataStore(_viewerConfig, clientMock.Object);
 
             FileData fileData = fileDataStore.GetFileData(fileDescription);
 
@@ -70,8 +63,7 @@ namespace GroupDocs.Viewer.AWS.S3.Tests
 
             FileDataStore fileDataStore = new FileDataStore(
                 _viewerConfig,
-                clientMock.Object,
-                _bucketName
+                clientMock.Object
             );
 
             FileDescription fileDescription = new FileDescription("document.doc");

@@ -4,41 +4,64 @@ using System.IO;
 using System.Linq;
 using Amazon.S3;
 using Amazon.S3.Model;
-using GroupDocs.Viewer.AWS.S3.Helpers;
+using GroupDocs.Viewer.AmazonS3.Helpers;
 using GroupDocs.Viewer.Config;
 using GroupDocs.Viewer.Domain;
 using GroupDocs.Viewer.Handler.Cache;
 
-namespace GroupDocs.Viewer.AWS.S3
+namespace GroupDocs.Viewer.AmazonS3
 {
+    /// <summary>
+    /// Cache data handler for Amazon S3
+    /// </summary>
     public class CacheDataHandler : ICacheDataHandler, IDisposable
     {
+        /// <summary>
+        /// The directory name for attachements
+        /// </summary>
         private const string AttachementDirectoryName = "attachements";
 
+        /// <summary>
+        /// The directory name for resorces
+        /// </summary>
         private const string ResourcesDirecotoryName = "resources";
 
+        /// <summary>
+        /// Prefix for the page name
+        /// </summary>
         private const string PageNamePrefix = "page-";
 
-        private readonly string _bucketName;
+        /// <summary>
+        /// Amazon S3 bucket name
+        /// </summary>
+        private readonly string _bucketName = ConfigHelper.BucketName;
 
+        /// <summary>
+        /// The GroupDocs.Viewer config
+        /// </summary>
         private readonly ViewerConfig _config;
 
+        /// <summary>
+        /// The Amazon S3 client
+        /// </summary>
         private IAmazonS3 _client;
 
-        public CacheDataHandler(ViewerConfig config, IAmazonS3 client, string bucketName)
+        public CacheDataHandler(ViewerConfig config, IAmazonS3 client)
         {
             if (config == null)
                 throw new ArgumentNullException("config");
             if (client == null)
                 throw new ArgumentNullException("client");
-            if (string.IsNullOrEmpty(bucketName))
-                throw new ArgumentNullException("bucketName");
 
             _config = config;
             _client = client;
-            _bucketName = bucketName;
         }
 
+        /// <summary>
+        /// Checks if file exists
+        /// </summary>
+        /// <param name="cacheFileDescription">The cache file description.</param>
+        /// <returns>true if file exists</returns>
         public bool Exists(CacheFileDescription cacheFileDescription)
         {
             try
@@ -61,6 +84,11 @@ namespace GroupDocs.Viewer.AWS.S3
             }
         }
 
+        /// <summary>
+        /// Get stream with cached file
+        /// </summary>
+        /// <param name="cacheFileDescription">The cache file description.</param>
+        /// <returns>The stream to read.</returns>
         public Stream GetInputStream(CacheFileDescription cacheFileDescription)
         {
             string objectKey = GetObjectKey(cacheFileDescription);
@@ -81,6 +109,11 @@ namespace GroupDocs.Viewer.AWS.S3
             }
         }
 
+        /// <summary>
+        /// Prepare stream where file will be stored
+        /// </summary>
+        /// <param name="cacheFileDescription">The cache file description.</param>
+        /// <returns>The stream to write</returns>
         public Stream GetOutputSaveStream(CacheFileDescription cacheFileDescription)
         {
             string key = GetObjectKey(cacheFileDescription);
@@ -100,6 +133,11 @@ namespace GroupDocs.Viewer.AWS.S3
             });
         }
 
+        /// <summary>
+        /// Gets the last modification date.
+        /// </summary>
+        /// <param name="cacheFileDescription">The cache file description.</param>
+        /// <returns>The date and time of last modification date.</returns>  
         public DateTime? GetLastModificationDate(CacheFileDescription cacheFileDescription)
         {
             string key = GetObjectKey(cacheFileDescription);
@@ -115,12 +153,17 @@ namespace GroupDocs.Viewer.AWS.S3
             return response.LastModified;
         }
 
+        /// <summary>
+        /// Gets the html page resources folder path.
+        /// </summary>
+        /// <param name="cachedPageDescription">The cached page description</param>
+        /// <returns>The resources folder path.</returns>
         public string GetHtmlPageResourcesFolder(CachedPageDescription cachedPageDescription)
         {
             string resourcesForPageFolderName =
                 string.Format("{0}{1}", PageNamePrefix, cachedPageDescription.PageNumber);
             string relativeDirectoryName =
-                PathHelper.ToRelativeDirectoryName(cachedPageDescription.Guid);
+                PathHelper.NormalizeFolderPath(cachedPageDescription.Guid);
 
             string path = Path.Combine(
                 _config.CachePath,
@@ -128,9 +171,14 @@ namespace GroupDocs.Viewer.AWS.S3
                 ResourcesDirecotoryName,
                 resourcesForPageFolderName);
 
-            return PathHelper.NormalizePath(path);
+            return PathHelper.NormalizeFolderPath(path);
         }
 
+        /// <summary>
+        ///  Gets the html page resources descriptions.
+        /// </summary>
+        /// <param name="cachedPageDescription">The cached page description</param>
+        /// <returns>List of page resources descriptions</returns>
         public List<CachedPageResourceDescription> GetHtmlPageResources(CachedPageDescription cachedPageDescription)
         {
             string resourcesFolder = GetHtmlPageResourcesFolder(cachedPageDescription);
@@ -155,11 +203,20 @@ namespace GroupDocs.Viewer.AWS.S3
             return result;
         }
 
+        /// <summary>
+        /// Gets the path to the cached document.
+        /// </summary>
+        /// <param name="cacheFileDescription">The cached document description</param>
+        /// <returns>The path for the cached file.</returns>
         public string GetFilePath(CacheFileDescription cacheFileDescription)
         {
             return GetObjectKey(cacheFileDescription);
         }
 
+        /// <summary>
+        /// Clears files from cache older than specified time interval.
+        /// </summary>
+        /// <param name="olderThan">The time interval.</param>
         public void ClearCache(TimeSpan olderThan)
         {
             DateTime now = DateTime.UtcNow;
@@ -224,16 +281,11 @@ namespace GroupDocs.Viewer.AWS.S3
 
         private string BuildCachedDocumentFolderPath(CachedDocumentDescription cachedPageDescription)
         {
-            string docFolder = PathHelper.ToRelativeDirectoryName(cachedPageDescription.Guid);
+            string docFolder = PathHelper.NormalizeFolderPath(cachedPageDescription.Guid);
 
             return Path.Combine(_config.CachePath, docFolder);
         }
 
-        /// <summary>
-        /// Gets the path to the cached attachment document
-        /// </summary>
-        /// <param name="cacheFileDescription">The cached attachment description</param>
-        /// <returns>System.String</returns>
         private string GetAttachmentFilePath(CacheFileDescription cacheFileDescription)
         {
             CachedAttachmentDescription attachmentDescription = cacheFileDescription as CachedAttachmentDescription;
@@ -242,7 +294,7 @@ namespace GroupDocs.Viewer.AWS.S3
                 throw new InvalidOperationException(
                     "cacheFileDescription object should be an instance of CachedAttachmentDescription class");
 
-            string docFolder = PathHelper.ToRelativeDirectoryName(attachmentDescription.Guid);
+            string docFolder = PathHelper.NormalizeFolderPath(attachmentDescription.Guid);
 
             return Path.Combine(
                 _config.CachePath,
@@ -251,11 +303,6 @@ namespace GroupDocs.Viewer.AWS.S3
                attachmentDescription.AttachmentName);
         }
 
-        /// <summary>
-        /// Gets resource file path.
-        /// </summary>
-        /// <param name="cacheFileDescription">The cached file description.</param>
-        /// <returns>The resource file path.</returns>
         private string GetResourceFilePath(CacheFileDescription cacheFileDescription)
         {
             CachedPageResourceDescription resourceDescription = cacheFileDescription as CachedPageResourceDescription;
@@ -268,11 +315,6 @@ namespace GroupDocs.Viewer.AWS.S3
             return Path.Combine(resourcesPath, resourceDescription.ResourceName);
         }
 
-        /// <summary>
-        /// Gets page file path.
-        /// </summary>
-        /// <param name="cacheFileDescription">The cached file description.</param>
-        /// <returns>The page file path.</returns>
         private string GetPageFilePath(CacheFileDescription cacheFileDescription)
         {
             CachedPageDescription pageDescription = cacheFileDescription as CachedPageDescription;
@@ -286,11 +328,6 @@ namespace GroupDocs.Viewer.AWS.S3
             return Path.Combine(folder, fileName);
         }
 
-        /// <summary>
-        /// Builds the file path for cached page.
-        /// </summary>
-        /// <param name="cachedPageDescription">The cache page description.</param>
-        /// <returns>System.String.</returns>
         private string BuildPageFileName(CachedPageDescription cachedPageDescription)
         {
             return string.Format("{0}{1}.{2}",
@@ -299,24 +336,14 @@ namespace GroupDocs.Viewer.AWS.S3
                 string.IsNullOrEmpty(cachedPageDescription.OutputExtension) ? "html" : cachedPageDescription.OutputExtension);
         }
 
-        /// <summary>
-        /// Builds the cache folder path.
-        /// </summary>
-        /// <param name="cachedPageDescription">The cache file description.</param>
-        /// <returns>System.String.</returns>
         private string BuildCachedPageFolderPath(CachedPageDescription cachedPageDescription)
         {
-            string docFolder = PathHelper.ToRelativeDirectoryName(cachedPageDescription.Guid);
+            string docFolder = PathHelper.NormalizeFolderPath(cachedPageDescription.Guid);
 
             string dimmensionsSubFolder = GetDimmensionsSubFolder(cachedPageDescription);
             return Path.Combine(_config.CachePath, docFolder, dimmensionsSubFolder);
         }
 
-        /// <summary>
-        /// Gets dimmensions folder name.
-        /// </summary>
-        /// <param name="cachedPageDescription">The cached page description.</param>
-        /// <returns>Dimmensions sub folder name e.g. 100x100px or 100x100px.pdf</returns>
         private string GetDimmensionsSubFolder(CachedPageDescription cachedPageDescription)
         {
             if (cachedPageDescription.Width == 0 && cachedPageDescription.Height == 0)

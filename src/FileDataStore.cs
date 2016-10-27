@@ -4,35 +4,49 @@ using System.Xml;
 using System.Xml.Serialization;
 using Amazon.S3;
 using Amazon.S3.Model;
-using GroupDocs.Viewer.AWS.S3.Helpers;
+using GroupDocs.Viewer.AmazonS3.Helpers;
 using GroupDocs.Viewer.Config;
 using GroupDocs.Viewer.Domain;
 using GroupDocs.Viewer.Helper;
 
-namespace GroupDocs.Viewer.AWS.S3
+namespace GroupDocs.Viewer.AmazonS3
 {
+    /// <summary>
+    /// The file data store for Amazon S3
+    /// </summary>
     public class FileDataStore : IFileDataStore, IDisposable
     {
+        /// <summary>
+        /// The GroupDocs.Viewer config
+        /// </summary>
         private readonly ViewerConfig _config;
 
+        /// <summary>
+        /// The Amazon S3 client
+        /// </summary>
         private IAmazonS3 _client;
 
-        private readonly string _bucketName;
+        /// <summary>
+        /// The Amazon S3 bucket name
+        /// </summary>
+        private readonly string _bucketName = ConfigHelper.BucketName;
 
-        public FileDataStore(ViewerConfig config, IAmazonS3 client, string bucketName)
+        public FileDataStore(ViewerConfig config, IAmazonS3 client)
         {
             if (config == null)
                 throw new ArgumentNullException("config");
             if (client == null)
                 throw new ArgumentNullException("client");
-            if (string.IsNullOrEmpty(bucketName))
-                throw new ArgumentNullException("bucketName");
 
             _config = config;
             _client = client;
-            _bucketName = bucketName;
         }
 
+        /// <summary>
+        /// Gets the file data.
+        /// </summary>
+        /// <param name="fileDescription">The file description.</param>
+        /// <returns>GroupDocs.Viewer.Domain.FileData.</returns>
         public FileData GetFileData(FileDescription fileDescription)
         {
             string objectKey = GetObjectKey(fileDescription);
@@ -54,6 +68,11 @@ namespace GroupDocs.Viewer.AWS.S3
             }
         }
 
+        /// <summary>
+        /// Saves the file data.
+        /// </summary>
+        /// <param name="fileDescription">The file description.</param>
+        /// <param name="fileData">The file data.</param>
         public void SaveFileData(FileDescription fileDescription, FileData fileData)
         {
             string objectKey = GetObjectKey(fileDescription);
@@ -115,7 +134,7 @@ namespace GroupDocs.Viewer.AWS.S3
         {
             string fileName = Path.ChangeExtension(fileDescription.Name, "xml");
             string directoryPath =
-                PathHelper.ToRelativeDirectoryName(fileDescription.Guid);
+                PathHelper.NormalizeFolderPath(fileDescription.Guid);
             string path =
                 Path.Combine(_config.CachePath, directoryPath, fileName);
 
