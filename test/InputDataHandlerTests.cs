@@ -169,5 +169,57 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
 
             handler.SaveDocument(new CachedDocumentDescription("document.doc"), documentStream);
         }
+
+        [Test]
+        public void ShouldAddFile()
+        {
+            Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
+            clientMock.Setup(client => client.PutObject(It.IsAny<PutObjectRequest>()))
+               .Returns((PutObjectRequest request) =>
+               {
+                   request.InputStream.Position = 0;
+
+                   Assert.AreEqual("document.doc", request.Key);
+                   Assert.AreEqual((byte)101, request.InputStream.ReadByte());
+
+                   return new PutObjectResponse();
+               });
+
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
+
+            MemoryStream documentStream = new MemoryStream();
+            documentStream.WriteByte(101);
+
+            handler.AddFile("document.doc", documentStream);
+        }
+
+        [Test]
+        public void ShouldGetEntities()
+        {
+            Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
+            clientMock.Setup(client => client.ListObjects(It.IsAny<ListObjectsRequest>()))
+                .Returns((ListObjectsRequest request) =>
+                {
+                    Assert.AreEqual("storage/", request.Prefix);
+                    Assert.AreEqual("/", request.Delimiter);
+
+                    ListObjectsResponse response = new ListObjectsResponse();
+                    response.S3Objects.Add(new S3Object { Key = "/storage/document.doc" });
+                    response.CommonPrefixes.Add("/storage/folder");
+
+                    return response;
+                });
+
+            InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
+
+            List<FileDescription> list = handler.GetEntities("/storage");
+
+            Assert.AreEqual(2, list.Count);
+            Assert.AreEqual("/storage/document.doc", list[1].Guid);
+            Assert.AreEqual(false, list[1].IsDirectory);
+            Assert.AreEqual("/storage/folder", list[0].Guid);
+            Assert.AreEqual(true, list[0].IsDirectory);
+        }
+
     }
 }

@@ -43,6 +43,50 @@ namespace GroupDocs.Viewer.AmazonS3
         }
 
         /// <summary>
+        /// Gets files and folders for specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <returns>List of entities.</returns>
+        public List<FileDescription> GetEntities(string path)
+        {
+            var normalizedPath = PathHelper.NormalizeFolderPath(path);
+
+            ListObjectsRequest request = new ListObjectsRequest
+            {
+                BucketName = _bucketName,
+                Prefix = normalizedPath.Length > 1 ? normalizedPath : string.Empty,
+                Delimiter = Constants.Delimiter
+            };
+
+            ListObjectsResponse response = _client.ListObjects(request);
+
+            List<FileDescription> result = new List<FileDescription>();
+
+            // add directory objects
+            foreach (string directory in response.CommonPrefixes)
+            {
+                FileDescription fileDescription = new FileDescription(directory, true);
+
+                result.Add(fileDescription);
+            }
+
+            // add file objects
+            foreach (S3Object entry in response.S3Objects)
+            {
+                FileDescription fileDescription = new FileDescription(entry.Key)
+                {
+                    IsDirectory = false,
+                    LastModificationDate = entry.LastModified,
+                    Size = entry.Size
+                };
+
+                result.Add(fileDescription);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Gets the file description.
         /// </summary>
         /// <param name="guid">The unique identifier.</param>
@@ -73,7 +117,7 @@ namespace GroupDocs.Viewer.AmazonS3
                 if (amazonS3Exception.ErrorCode != null && amazonS3Exception.ErrorCode.Equals("NotFound"))
                     return fileDescription;
 
-                if (amazonS3Exception.ErrorCode != null 
+                if (amazonS3Exception.ErrorCode != null
                     && (amazonS3Exception.ErrorCode.Equals("InvalidAccessKeyId") || amazonS3Exception.ErrorCode.Equals("InvalidSecurity")))
                 {
                     throw new System.Exception("Please check the provided AWS Credentials. " +
@@ -82,6 +126,25 @@ namespace GroupDocs.Viewer.AmazonS3
 
                 throw new System.Exception(string.Format("An error occurred with the message '{0}' when getting object metadata.", amazonS3Exception.Message));
             }
+        }
+
+        /// <summary>
+        /// Adds file to storage.
+        /// </summary>
+        /// <param name="guid">This is user defined key that identifies file in the storage.</param>
+        /// <param name="content">Stream to save data to storage.</param>
+        public void AddFile(string guid, Stream content)
+        {
+            string objectKey = GetObjectKey(guid);
+
+            PutObjectRequest request = new PutObjectRequest()
+            {
+                BucketName = _bucketName,
+                Key = objectKey,
+                InputStream = content
+            };
+
+            _client.PutObject(request);
         }
 
         /// <summary>
@@ -125,6 +188,7 @@ namespace GroupDocs.Viewer.AmazonS3
         /// </summary>
         /// <param name="fileTreeOptions">The file tree options.</param>
         /// <returns>System.Collections.Generic.List&lt;GroupDocs.Viewer.Domain.FileDescription&gt;.</returns>
+        [Obsolete("Obsolete since GroupDocs.Viewer for .NET 16.11.0")]
         public List<FileDescription> LoadFileTree(FileTreeOptions fileTreeOptions)
         {
             var path = PathHelper.NormalizeFolderPath(fileTreeOptions.Path);
@@ -169,7 +233,8 @@ namespace GroupDocs.Viewer.AmazonS3
         /// </summary>
         /// <param name="cachedDocumentDescription">Cached document description</param>
         /// <param name="documentStream">Document stream</param>
-        public void SaveDocument(CachedDocumentDescription cachedDocumentDescription, 
+        [Obsolete("Obsolete since GroupDocs.Viewer for .NET 16.11.0")]
+        public void SaveDocument(CachedDocumentDescription cachedDocumentDescription,
             Stream documentStream)
         {
             string objectKey = GetObjectKey(cachedDocumentDescription.Guid);
