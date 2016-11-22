@@ -40,7 +40,7 @@ var viewerConfig = new ViewerConfig
 };
 
 var amazonS3Config = new AmazonS3Config {RegionEndpoint = RegionEndpoint.Your-Region-Endpoint};
-var amazonS3Client = new AmazonS3Client(config);
+var amazonS3Client = new AmazonS3Client(amazonS3Config);
 
 var inputDataHandler = new InputDataHandler(viewerConfig, amazonS3Client);
 var cacheDataHandler = new CacheDataHandler(viewerConfig, amazonS3Client);
