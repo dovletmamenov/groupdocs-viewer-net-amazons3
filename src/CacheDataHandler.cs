@@ -17,12 +17,12 @@ namespace GroupDocs.Viewer.AmazonS3
     public class CacheDataHandler : ICacheDataHandler, IDisposable
     {
         /// <summary>
-        /// The directory name for attachements
+        /// The directory name for attachments
         /// </summary>
-        private const string AttachementDirectoryName = "attachements";
+        private const string AttachementDirectoryName = "attachments";
 
         /// <summary>
-        /// The directory name for resorces
+        /// The directory name for resources
         /// </summary>
         private const string ResourcesDirecotoryName = "resources";
 
@@ -128,8 +128,6 @@ namespace GroupDocs.Viewer.AmazonS3
                 };
 
                 _client.PutObject(request);
-
-                return true;
             });
         }
 

@@ -148,7 +148,7 @@ namespace GroupDocs.Viewer.AmazonS3
         }
 
         /// <summary>
-        /// Retrives file from storage.
+        /// Retrieves file from storage.
         /// </summary>
         /// <param name="guid">This is user defined key that identifies file in the storage.</param>
         /// <returns>An open stream read from to get the data from storage.</returns>

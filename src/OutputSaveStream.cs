@@ -8,25 +8,19 @@ namespace GroupDocs.Viewer.AmazonS3
     /// </summary>
     public class OutputSaveStream : MemoryStream
     {
-        private bool _executed;
+        private readonly Action<Stream> _onCloseAction;
 
-        private readonly Func<Stream, bool> _executeWhenClosing;
-
-        public OutputSaveStream(Func<Stream, bool> executeWhenClosing)
+        public OutputSaveStream(Action<Stream> onCloseAction)
         {
-            _executeWhenClosing = executeWhenClosing;
+            _onCloseAction = onCloseAction;
         }
 
         public override void Close()
         {
-            if (!_executed)
+            if (this.CanSeek && this.CanRead)
             {
-                _executed = true;
-                MemoryStream stream = new MemoryStream();
                 this.Position = 0;
-                this.CopyTo(stream);
-                stream.Position = 0;
-                _executeWhenClosing(stream);
+                _onCloseAction(this);
             }
 
             base.Close();

@@ -11,10 +11,8 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
         {
             bool wasCalled = false;
 
-            OutputSaveStream outputSaveStream = new OutputSaveStream(delegate(Stream stream)
-            {
+            OutputSaveStream outputSaveStream = new OutputSaveStream(delegate {
                 wasCalled = true;
-                return true;
             });
 
             outputSaveStream.Dispose();
@@ -27,10 +25,8 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
         {
             bool wasCalled = false;
 
-            OutputSaveStream outputSaveStream = new OutputSaveStream(delegate (Stream stream)
-            {
+            OutputSaveStream outputSaveStream = new OutputSaveStream(delegate {
                 wasCalled = true;
-                return true;
             });
 
             outputSaveStream.Close();

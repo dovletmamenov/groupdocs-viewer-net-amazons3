@@ -117,7 +117,7 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
             Assert.AreEqual(lastModified, lastModificationDate);
         }
 
-        [Test]
+        [Test, Obsolete]
         public void ShouldLoadFileTree()
         {
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
