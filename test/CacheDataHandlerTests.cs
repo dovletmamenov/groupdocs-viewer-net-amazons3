@@ -59,7 +59,7 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
 
             string filePath = handler.GetFilePath(cachedDocumentDescription);
 
-            Assert.AreEqual("cache/path/document.doc/attachements/attachement.zip", filePath);
+            Assert.AreEqual("cache/path/document.doc/attachments/attachement.zip", filePath);
         }
 
         [Test]
@@ -137,7 +137,7 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
             clientMock.Setup(client => client.GetObjectMetadata(It.IsAny<GetObjectMetadataRequest>()))
                 .Returns((GetObjectMetadataRequest request) =>
                 {
-                    Assert.AreEqual("cache/document.doc/attachements/attachement.zip", request.Key);
+                    Assert.AreEqual("cache/document.doc/attachments/attachement.zip", request.Key);
 
                     return new GetObjectMetadataResponse();
                 });

@@ -86,15 +86,11 @@ namespace GroupDocs.Viewer.AmazonS3
 
             _client.PutObject(request);
         }
-
+        
         private FileData Deserialize(Stream stream)
         {
             using (XmlTextReader xmlTextReader = new XmlTextReader(stream))
             {
-                XmlSerializer wordsFileDataSerializer = new XmlSerializer(typeof(WordsFileData));
-                if (wordsFileDataSerializer.CanDeserialize(xmlTextReader))
-                    return wordsFileDataSerializer.Deserialize(xmlTextReader) as WordsFileData;
-
                 XmlSerializer emailFileDataSerializer = new XmlSerializer(typeof(EmailFileData));
                 if (emailFileDataSerializer.CanDeserialize(xmlTextReader))
                     return emailFileDataSerializer.Deserialize(xmlTextReader) as EmailFileData;
@@ -110,13 +106,6 @@ namespace GroupDocs.Viewer.AmazonS3
         private Stream Serialize(FileData fileData)
         {
             MemoryStream stream = new MemoryStream();
-
-            if (fileData is WordsFileData)
-            {
-                XmlSerializer wordsSerializer = new XmlSerializer(typeof(WordsFileData));
-                wordsSerializer.Serialize(stream, fileData);
-                return stream;
-            }
 
             if (fileData is EmailFileData)
             {
