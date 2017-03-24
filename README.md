@@ -17,7 +17,7 @@ Add "BucketName" to your AppSettings in app.config or web.config
 <?xml version="1.0" encoding="utf-8" ?>
 <configuration>
   <appSettings>
-    <add key="BucketName" value="your-bucket-name" />
+    <add key="BucketName" value="bucket-name" />
   </appSettings>
 </configuration>
 ```
@@ -29,6 +29,17 @@ information about keeping your access keys sucure.
 For the test purposes you can add [IAM access keys](http://docs.aws.amazon.com/IAM/latest/UserGuide/ManagingCredentials.html) to your AppSettings in app.config or web.config.
 (Do not commit your access keys to the source control).
 
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="AWSAccessKey" value="***"/>
+    <add key="AWSSecretKey" value="***"/>
+    <add key="AWSRegion" value="us-west-2" />
+  </appSettings>
+</configuration>
+```
+
 ## How to use
 
 ```csharp
@@ -39,7 +50,7 @@ var viewerConfig = new ViewerConfig
     UseCache = true
 };
 
-var amazonS3Config = new AmazonS3Config {RegionEndpoint = RegionEndpoint.Your-Region-Endpoint};
+var amazonS3Config = new AmazonS3Config { RegionEndpoint = RegionEndpoint.USWest2 };
 var amazonS3Client = new AmazonS3Client(amazonS3Config);
 
 var inputDataHandler = new InputDataHandler(viewerConfig, amazonS3Client);
@@ -48,7 +59,7 @@ var fileDataStore = new FileDataStore(viewerConfig, amazonS3Client);
 
 var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, inputDataHandler, cacheDataHandler, fileDataStore);
 
-var pages = viewerHtmlHandler.GetPages("your-document.docx");
+var pages = viewerHtmlHandler.GetPages("document.docx");
 ```
 
 
