@@ -118,8 +118,10 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
         }
 
         [Test, Obsolete]
-        public void ShouldLoadFileTree()
+        public void ShouldLoadEntities()
         {
+            string storagePath = "/storage";
+
             Mock<IAmazonS3> clientMock = new Mock<IAmazonS3>();
             clientMock.Setup(client => client.ListObjects(It.IsAny<ListObjectsRequest>()))
                 .Returns((ListObjectsRequest request) =>
@@ -128,17 +130,15 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
                     Assert.AreEqual("/", request.Delimiter);
 
                     ListObjectsResponse response = new ListObjectsResponse();
-                    response.S3Objects.Add(new S3Object { Key = "/storage/document.doc"});
-                    response.CommonPrefixes.Add("/storage/folder");
+                    response.S3Objects.Add(new S3Object { Key = storagePath + "/document.doc" });
+                    response.CommonPrefixes.Add(storagePath +  "/folder");
 
                     return response;
                 });
 
             InputDataHandler handler = new InputDataHandler(_viewerConfig, clientMock.Object);
 
-            FileTreeOptions fileTreeOptions = new FileTreeOptions("/storage");
-
-            List<FileDescription> list = handler.LoadFileTree(fileTreeOptions);
+            List<FileDescription> list = handler.GetEntities(storagePath);
 
             Assert.AreEqual(2, list.Count);
             Assert.AreEqual("/storage/document.doc", list[1].Guid);

@@ -14,6 +14,7 @@ namespace GroupDocs.Viewer.AmazonS3
     /// <summary>
     /// The file data store for Amazon S3
     /// </summary>
+    [Obsolete("Use ViewerDataHandler as a replacement.")]
     public class FileDataStore : IFileDataStore, IDisposable
     {
         /// <summary>
@@ -91,10 +92,6 @@ namespace GroupDocs.Viewer.AmazonS3
         {
             using (XmlTextReader xmlTextReader = new XmlTextReader(stream))
             {
-                XmlSerializer emailFileDataSerializer = new XmlSerializer(typeof(EmailFileData));
-                if (emailFileDataSerializer.CanDeserialize(xmlTextReader))
-                    return emailFileDataSerializer.Deserialize(xmlTextReader) as EmailFileData;
-
                 XmlSerializer defaultFileDataSerializer = new XmlSerializer(typeof(FileData));
                 if (defaultFileDataSerializer.CanDeserialize(xmlTextReader))
                     return defaultFileDataSerializer.Deserialize(xmlTextReader) as FileData;
@@ -106,13 +103,6 @@ namespace GroupDocs.Viewer.AmazonS3
         private Stream Serialize(FileData fileData)
         {
             MemoryStream stream = new MemoryStream();
-
-            if (fileData is EmailFileData)
-            {
-                XmlSerializer emailSerializer = new XmlSerializer(typeof(EmailFileData));
-                emailSerializer.Serialize(stream, fileData);
-                return stream;
-            }
 
             XmlSerializer defaultSerializer = new XmlSerializer(typeof(FileData));
             defaultSerializer.Serialize(stream, fileData);

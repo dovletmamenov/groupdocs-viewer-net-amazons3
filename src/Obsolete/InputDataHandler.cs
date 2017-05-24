@@ -14,6 +14,7 @@ namespace GroupDocs.Viewer.AmazonS3
     /// <summary>
     /// The input data handler for Amazon S3
     /// </summary>
+    [Obsolete("Use ViewerDataHandler as a replacement.")]
     public class InputDataHandler : IInputDataHandler, IDisposable
     {
         /// <summary>
@@ -181,51 +182,6 @@ namespace GroupDocs.Viewer.AmazonS3
         {
             FileDescription fileDescription = GetFileDescription(guid);
             return fileDescription.LastModificationDate;
-        }
-
-        /// <summary>
-        /// Loads files/folders structure for specified path
-        /// </summary>
-        /// <param name="fileTreeOptions">The file tree options.</param>
-        /// <returns>System.Collections.Generic.List&lt;GroupDocs.Viewer.Domain.FileDescription&gt;.</returns>
-        [Obsolete("Obsolete since GroupDocs.Viewer for .NET 16.11.0")]
-        public List<FileDescription> LoadFileTree(FileTreeOptions fileTreeOptions)
-        {
-            var path = PathHelper.NormalizeFolderPath(fileTreeOptions.Path);
-
-            ListObjectsRequest request = new ListObjectsRequest
-            {
-                BucketName = _bucketName,
-                Prefix = path.Length > 1 ? path : string.Empty,
-                Delimiter = Constants.Delimiter
-            };
-
-            ListObjectsResponse response = _client.ListObjects(request);
-
-            List<FileDescription> result = new List<FileDescription>();
-
-            // add directory objects
-            foreach (string directory in response.CommonPrefixes)
-            {
-                FileDescription fileDescription = new FileDescription(directory, true);
-
-                result.Add(fileDescription);
-            }
-
-            // add file objects
-            foreach (S3Object entry in response.S3Objects)
-            {
-                FileDescription fileDescription = new FileDescription(entry.Key)
-                {
-                    IsDirectory = false,
-                    LastModificationDate = entry.LastModified,
-                    Size = entry.Size
-                };
-
-                result.Add(fileDescription);
-            }
-
-            return result;
         }
 
         /// <summary>

@@ -6,6 +6,7 @@ namespace GroupDocs.Viewer.AmazonS3
     /// <summary>
     /// The output save stream 
     /// </summary>
+    [Obsolete("Use ViewerDataHandler and OutputStream as a replacement.")]
     public class OutputSaveStream : MemoryStream
     {
         private readonly Action<Stream> _onCloseAction;

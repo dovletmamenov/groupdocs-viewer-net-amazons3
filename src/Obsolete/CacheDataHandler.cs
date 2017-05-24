@@ -14,6 +14,7 @@ namespace GroupDocs.Viewer.AmazonS3
     /// <summary>
     /// Cache data handler for Amazon S3
     /// </summary>
+    [Obsolete("Use ViewerDataHandler as a replacement.")]
     public class CacheDataHandler : ICacheDataHandler, IDisposable
     {
         /// <summary>

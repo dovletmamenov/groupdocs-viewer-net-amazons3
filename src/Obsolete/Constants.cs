@@ -1,5 +1,8 @@
-﻿namespace GroupDocs.Viewer.AmazonS3
+﻿using System;
+
+namespace GroupDocs.Viewer.AmazonS3
 {
+    [Obsolete("This class is obsolete. No replacement will be provided.")]
     public static class Constants
     {
         /// <summary>

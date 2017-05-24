@@ -11,17 +11,6 @@ Install via [nuget.org](http://nuget.org)
 Install-Package groupdocs-viewer-dotnet-amazons3
 ```
 
-Add "BucketName" to your AppSettings in app.config or web.config
-
-```xml
-<?xml version="1.0" encoding="utf-8" ?>
-<configuration>
-  <appSettings>
-    <add key="BucketName" value="bucket-name" />
-  </appSettings>
-</configuration>
-```
-
 If you're hosting your project inside EC2 instance IAM access keys already exist inside instance via environment variables.
 Please check [AWS Access Keys best practices article](http://docs.aws.amazon.com/general/latest/gr/aws-access-keys-best-practices.html) for more 
 information about keeping your access keys sucure. 
@@ -43,21 +32,21 @@ For the test purposes you can add [IAM access keys](http://docs.aws.amazon.com/I
 ## How to use
 
 ```csharp
-var viewerConfig = new ViewerConfig
-{
-    StoragePath = "/storage-path",
-    CachePath = "/storage-path/cache",
-    UseCache = true
-};
 
 var amazonS3Config = new AmazonS3Config { RegionEndpoint = RegionEndpoint.USWest2 };
 var amazonS3Client = new AmazonS3Client(amazonS3Config);
+var amazonBucketName = "my-bucket";
 
-var inputDataHandler = new InputDataHandler(viewerConfig, amazonS3Client);
-var cacheDataHandler = new CacheDataHandler(viewerConfig, amazonS3Client);
-var fileDataStore = new FileDataStore(viewerConfig, amazonS3Client);
+var amazonS3FileManager = new AmazonS3FileManager(amazonS3Client, amazonBucketName);
 
-var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, inputDataHandler, cacheDataHandler, fileDataStore);
+var viewerDataHandler = new ViewerDataHandler(amazonS3FileManager);
+
+var viewerConfig = new ViewerConfig
+{
+    UseCache = true
+};
+
+var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, viewerDataHandler, viewerDataHandler, viewerDataHandler);
 
 var pages = viewerHtmlHandler.GetPages("document.docx");
 ```
