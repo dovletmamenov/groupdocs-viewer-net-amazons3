@@ -46,7 +46,7 @@ var viewerConfig = new ViewerConfig
     UseCache = true
 };
 
-var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, viewerDataHandler, viewerDataHandler, viewerDataHandler);
+var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, viewerDataHandler, viewerDataHandler);
 
 var pages = viewerHtmlHandler.GetPages("document.docx");
 ```

@@ -6,7 +6,6 @@ using Amazon.S3.Model;
 using GroupDocs.Viewer.AmazonS3.Helpers;
 using GroupDocs.Viewer.Config;
 using GroupDocs.Viewer.Domain;
-using GroupDocs.Viewer.Domain.Options;
 using GroupDocs.Viewer.Handler.Input;
 
 namespace GroupDocs.Viewer.AmazonS3

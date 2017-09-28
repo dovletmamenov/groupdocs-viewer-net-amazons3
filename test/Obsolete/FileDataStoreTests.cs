@@ -92,7 +92,6 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
             {
                 DateCreated = now,
                 DateModified = now,
-                IsComplete = true,
                 MaxHeight = 100,
                 MaxWidth = 100,
                 PageCount = 1

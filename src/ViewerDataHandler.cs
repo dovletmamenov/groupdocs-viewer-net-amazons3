@@ -3,19 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Xml;
-using System.Xml.Serialization;
 using GroupDocs.Viewer.Domain;
 using GroupDocs.Viewer.Handler.Cache;
 using GroupDocs.Viewer.Handler.Input;
-using GroupDocs.Viewer.Helper;
 
 namespace GroupDocs.Viewer.AmazonS3
 {
     /// <summary>
     /// GroupDocs.Viewer Input, Cache and FileData handlers implementation
     /// </summary>
-    public class ViewerDataHandler : IInputDataHandler, ICacheDataHandler, IFileDataStore
+    public class ViewerDataHandler : IInputDataHandler, ICacheDataHandler
     {
         private readonly IFileManager _fileManager;
 
@@ -24,7 +21,6 @@ namespace GroupDocs.Viewer.AmazonS3
         private const string ResourcesDirectory = "r";
         private const string AttachmentDirectory = "a";
         private const string ImageFolderNameFormat = "{0}x{1}px";
-        private const string FileDataFileName = "info.xml";
         private const string PdfFileName = "file.pdf";
 
         public ViewerDataHandler(IFileManager fileManager)
@@ -321,69 +317,6 @@ namespace GroupDocs.Viewer.AmazonS3
             result = result.TrimStart(replacementCharacter);
 
             return result.Replace('.', replacementCharacter);
-        }
-
-        #endregion
-
-        #region IFileDataStore
-
-        public FileData GetFileData(FileDescription fileDescription)
-        {
-            string path = GetFileDataPath(fileDescription);
-
-            if (!_fileManager.FileExist(path))
-                return null;
-
-            using (Stream stream = _fileManager.Download(path))
-                return Deserialize(stream);
-        }
-
-        public void SaveFileData(FileDescription fileDescription, FileData fileData)
-        {
-            string path = GetFileDataPath(fileDescription);
-
-            using (MemoryStream stream = new MemoryStream())
-            {
-                Serialize(stream, fileData);
-
-                stream.Position = 0;
-                _fileManager.Upload(stream, path);
-            }
-        }
-
-        private string GetFileDataPath(FileDescription fileDescription)
-        {
-            string path = fileDescription.Guid.Contains(CacheFolderName)
-               ? fileDescription.Guid.Replace(CacheFolderName, string.Empty)
-               : fileDescription.Guid;
-
-            string relativeDirectoryName = ToRelativeDirectoryName(path);
-            string fileDataPath = string.Format(GetFileDataPathFormat(), relativeDirectoryName);
-
-            return NormalizePath(Path.Combine(fileDataPath, FileDataFileName));
-        }
-
-        private string GetFileDataPathFormat()
-        {
-            return Path.Combine(CacheFolderName, "{0}");
-        }
-
-        private FileData Deserialize(Stream fileDataStream)
-        {
-            using (XmlTextReader xmlTextReader = new XmlTextReader(fileDataStream))
-            {
-                XmlSerializer defaultFileDataSerializer = new XmlSerializer(typeof(FileData));
-                if (defaultFileDataSerializer.CanDeserialize(xmlTextReader))
-                    return defaultFileDataSerializer.Deserialize(xmlTextReader) as FileData;
-            }
-
-            return null;
-        }
-
-        private void Serialize(Stream fileStream, FileData fileData)
-        {
-            XmlSerializer defaultSerializer = new XmlSerializer(typeof(FileData));
-            defaultSerializer.Serialize(fileStream, fileData);
         }
 
         #endregion

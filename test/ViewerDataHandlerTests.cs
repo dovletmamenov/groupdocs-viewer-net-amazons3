@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using GroupDocs.Viewer.Domain;
@@ -225,49 +224,6 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
             var filePath = _viewerDataHandler.GetFilePath(cachedPage);
 
             Assert.AreEqual("cache/document_doc/p1.html", filePath);
-        }
-
-        #endregion
-
-        #region IFileDataStore
-
-        [Test]
-        public void TestSaveGetFileData()
-        {
-            var fileData = CreateFileData();
-            var fileDescription = new FileDescription("file.docx");
-
-            _viewerDataHandler.SaveFileData(fileDescription, fileData);
-            var retrievedFileData = _viewerDataHandler.GetFileData(fileDescription);
-
-            Assert.AreEqual(fileData.DateCreated, retrievedFileData.DateCreated);
-        }
-
-        private FileData CreateFileData()
-        {
-            DateTime now = DateTime.Now;
-
-            FileData fileData = new FileData
-            {
-                DateCreated = now,
-                DateModified = now,
-                MaxHeight = 100,
-                MaxWidth = 100,
-                PageCount = 1
-            };
-
-            PageData page = new PageData
-            {
-                Width = 100,
-                Height = 100,
-                Number = 1,
-                IsVisible = true
-            };
-
-            fileData.Pages = new List<PageData>();
-            fileData.Pages.Add(page);
-
-            return fileData;
         }
 
         #endregion

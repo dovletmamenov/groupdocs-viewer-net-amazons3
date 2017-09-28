@@ -5,7 +5,6 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using GroupDocs.Viewer.Config;
 using GroupDocs.Viewer.Domain;
-using GroupDocs.Viewer.Domain.Options;
 using Moq;
 using NUnit.Framework;
 
