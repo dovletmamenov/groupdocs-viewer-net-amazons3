@@ -1,6 +1,6 @@
 # GroupDocs.Viewer .NET AmazonS3
 
-[Amazon S3](https://aws.amazon.com/s3/) IInputDataHandler and ICacheDataHandler provider for [GroupDocs.Viewer for .NET](https://www.nuget.org/packages/groupdocs-viewer-dotnet/)
+[Amazon S3](https://aws.amazon.com/s3/) IInputDataHandler and ICacheDataHandler provider for [GroupDocs.Viewer for .NET](https://www.nuget.org/packages/groupdocs.viewer)
  which allows you to keep files and cache in the cloud. 
 
 ## Installation & Configuration
