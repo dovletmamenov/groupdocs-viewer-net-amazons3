@@ -157,6 +157,13 @@ namespace GroupDocs.Viewer.AmazonS3
             _fileManager.DeleteDirectory(CacheFolderName);
         }
 
+        public void ClearCache(string guid)
+        {
+            var path = NormalizePath(Path.Combine(CacheFolderName, guid));
+
+            _fileManager.DeleteDirectory(path);
+        }
+
         public string GetFilePath(CacheFileDescription cacheFileDescription)
         {
             string path;

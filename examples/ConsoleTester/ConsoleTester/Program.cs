@@ -9,7 +9,7 @@ namespace ConsoleTester
 {
     static class Program
     {
-        private const string Bucket = "your-bucket-name";
+        private const string Bucket = "group-docs-bucket";
         private const string FileName = "document.docx";
 
         static void Main(string[] args)

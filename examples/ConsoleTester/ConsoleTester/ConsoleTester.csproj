@@ -44,6 +44,10 @@
       <HintPath>..\packages\GroupDocs.Viewer.17.9\lib\GroupDocs.Viewer.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="GroupDocs.Viewer.AmazonS3, Version=4.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\groupdocs-viewer-dotnet-amazons3.4.0.0\lib\net40\GroupDocs.Viewer.AmazonS3.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -62,12 +66,6 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\src\GroupDocs.Viewer.AmazonS3.csproj">
-      <Project>{a4130b11-bd3d-467c-8375-d551b07dce9f}</Project>
-      <Name>GroupDocs.Viewer.AmazonS3</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\AWSSDK.S3.3.3.11\analyzers\dotnet\cs\AWSSDK.S3.CodeAnalysis.dll" />

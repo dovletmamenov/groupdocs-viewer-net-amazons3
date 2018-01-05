@@ -65,7 +65,7 @@ namespace GroupDocs.Viewer.AmazonS3.Tests
 
         public IFile GetFile(string path)
         {
-            var now = new DateTime(2017, 7, 7);
+            var now = new DateTime(DateTime.Now.Year, 7, 7);
 
             var file = new AmazonS3File
             {
