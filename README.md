@@ -1,4 +1,6 @@
-# GroupDocs.Viewer .NET AmazonS3
+# [Obsolete]  GroupDocs.Viewer .NET AmazonS3
+
+This repository is now obsolete and no longer maintained. New version is available at [GroupDocs.Viewer.AmazonS3Storage](https://github.com/harumburum/AmazonS3Storage).
 
 [Amazon S3](https://aws.amazon.com/s3/) IInputDataHandler and ICacheDataHandler provider for [GroupDocs.Viewer for .NET](https://www.nuget.org/packages/groupdocs.viewer)
  which allows you to keep files and cache in the cloud. 
@@ -43,7 +45,7 @@ var viewerDataHandler = new ViewerDataHandler(amazonS3FileManager);
 
 var viewerConfig = new ViewerConfig
 {
-    UseCache = true
+    EnableCaching = true
 };
 
 var viewerHtmlHandler = new ViewerHtmlHandler(viewerConfig, viewerDataHandler, viewerDataHandler);

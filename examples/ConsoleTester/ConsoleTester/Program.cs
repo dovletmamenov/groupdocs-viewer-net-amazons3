@@ -22,7 +22,7 @@ namespace ConsoleTester
             var amazonS3FileManager = new AmazonS3FileManager(amazonS3Client, Bucket);
             var viewerDataHandler = new ViewerDataHandler(amazonS3FileManager);
 
-            var viewerConfig = new ViewerConfig { UseCache = true };
+            var viewerConfig = new ViewerConfig { EnableCaching = true };
             var handler = new ViewerHtmlHandler(viewerConfig, viewerDataHandler, viewerDataHandler);
 
             var pagesHtml = handler.GetPages(FileName);
